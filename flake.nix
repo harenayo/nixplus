@@ -36,16 +36,31 @@
     }: {
       imports = modules;
     };
-    nixosModules.cohm = {
-      config,
-      lib,
-      ...
-    }: {
-      options.nixplus.cohm.enable = lib.options.mkOption {
-        default = false;
-        type = lib.types.bool;
+    nixosModules = {
+      cohm = {
+        config,
+        lib,
+        ...
+      }: {
+        options.nixplus.cohm.enable = lib.options.mkOption {
+          default = false;
+          type = lib.types.bool;
+        };
+        config.users.users = lib.modules.mkIf config.nixplus.cohm.enable (builtins.mapAttrs (_: user: user.nixplus.cohm) (lib.attrsets.filterAttrs (_: user: user ? nixplus.cohm) config.home-manager.users));
       };
-      config.users.users = lib.modules.mkIf config.nixplus.cohm.enable (builtins.mapAttrs (_: user: user.nixplus.cohm) (lib.attrsets.filterAttrs (_: user: user ? nixplus.cohm) config.home-manager.users));
+      ssv = {
+        config,
+        lib,
+        ...
+      }: {
+        options.nixplus.ssv.enable = lib.options.mkOption {
+          default = false;
+          type = lib.types.bool;
+        };
+        config.home-manager.users = lib.modules.mkIf config.nixplus.ssv.enable (builtins.mapAttrs (_: _: {
+          home.stateVersion = config.system.stateVersion;
+        }) config.home-manager.users);
+      };
     };
   };
 }
