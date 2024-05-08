@@ -4,12 +4,10 @@
   }: {
     homeModules.cohm = {
       lib,
-      options,
       ...
     }: {
       options.core = lib.options.mkOption {
         default = {};
-        type = builtins.head options.users.users.getSubModules;
       };
     };
     nixosModules.cohm = {
