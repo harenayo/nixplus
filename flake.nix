@@ -19,7 +19,7 @@
         default = false;
         type = lib.types.bool;
       };
-      config.users.users = lib.modules.mkIf config.nixplus.cohm.enable (builtins.mapAttrs (_: user: user.core) config.home-manager.users);
+      config.users.users = lib.modules.mkIf config.nixplus.cohm.enable (builtins.mapAttrs (_: user: user.core) (lib.attrsets.filterAttr (_: user: user ? core) config.home-manager.users));
     };
   };
 }
