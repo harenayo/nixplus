@@ -1,3 +1,3 @@
 # nixplus
 
-Extra [Nix](https://nixos.org) modules.
+Extra [Nix](https://nixos.org) collection.
