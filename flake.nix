@@ -15,7 +15,8 @@
         initExtra = let
           sh =
             "${config.nixplus.myshell.package}${config.nixplus.myshell.package.shellPath}";
-        in lib.modules.mkOrder 10000 "SHELL=${sh} exec ${sh}";
+        in lib.modules.mkOrder 10200
+        "[ $MYSHELL_FORCE_BASH != 1 ] && SHELL=${sh} exec ${sh}";
       };
     };
     lib.homeConfiguration = { modules, }: { imports = modules; };
