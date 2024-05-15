@@ -41,7 +41,7 @@
           initExtra = let
             sh = "${config.nixplus.myshell}${config.nixplus.myshell.shellPath}";
           in lib.modules.mkOrder 10200
-          "[ $MYSHELL_FORCE_BASH != 1 ] && SHELL=${sh} exec ${sh}";
+          "[ \${MYSHELL_FORCE_BASH:-0} != 1 ] && SHELL=${sh} exec ${sh}";
         };
       };
     };
