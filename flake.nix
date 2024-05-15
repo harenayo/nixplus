@@ -38,15 +38,18 @@
               config.home-manager.users);
         };
       };
-      ssv = { config, lib, ... }: {
-        options.nixplus.ssv.enable = lib.options.mkOption {
-          default = false;
-          type = lib.types.bool;
-        };
-        config.home-manager.sharedModules =
-          lib.modules.mkIf config.nixplus.ssv.enable [{
-            home.stateVersion = config.system.stateVersion;
-          }];
+      ssv = nixosInput: {
+        config.home-manager.sharedModules = [
+          (homeManagerInput: {
+            options.nixplus.ssv.enable = homeManagerInput.lib.options.mkOption {
+              default = false;
+              type = homeManagerInput.lib.types.bool;
+            };
+            config.home.stateVersion = homeManagerInput.lib.modules.mkIf
+              homeManagerInput.config.nixplus.ssv.enable
+              nixosInput.config.system.stateVersion;
+          })
+        ];
       };
     };
   };
