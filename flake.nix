@@ -51,9 +51,7 @@
         config = {
           home-manager.sharedModules = [
             (homeManagerInput: {
-              options.nixplus.cohm = homeManagerInput.lib.options.mkOption {
-                type = nixosInput.options.users.users.type.nestedTypes.elemType;
-              };
+              options.nixplus.cohm = homeManagerInput.lib.options.mkOption { };
             })
           ];
           users.users = builtins.mapAttrs (_: user: user.nixplus.cohm)
