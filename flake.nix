@@ -20,22 +20,27 @@
     };
     lib.homeConfiguration = { modules, }: { imports = modules; };
     nixosModules = {
-      cohm = { config, lib, options, ... }: {
-        options.nixplus.cohm.enable = lib.options.mkOption {
-          default = false;
-          type = lib.types.bool;
-        };
-        config = lib.modules.mkIf config.nixplus.cohm.enable {
+      cohm = nixosInput: {
+        config = {
           home-manager.sharedModules = [
-            ({ lib, ... }: {
-              options.nixplus.cohm = lib.options.mkOption {
-                default = builtins.head options.user.user.getSubModules;
+            (homeManagerInput: {
+              options.nixplus.cohm = {
+                enable = homeManagerInput.lib.options.mkOption {
+                  default = false;
+                  type = homeManagerInput.lib.types.bool;
+                };
+                config = homeManagerInput.lib.options.mkOption {
+                  default = { };
+                  type =
+                    builtins.head nixosInput.options.user.user.getSubModules;
+                };
               };
             })
           ];
-          users.users = builtins.mapAttrs (_: user: user.nixplus.cohm)
-            (lib.attrsets.filterAttrs (_: user: user ? nixplus.cohm)
-              config.home-manager.users);
+          users.users = builtins.mapAttrs (_: user: user.nixplus.cohm.config)
+            (nixosInput.lib.attrsets.filterAttrs (_:
+              nixosInput.lib.attrsets.attrByPath [ "nixplus" "cohm" "enable" ]
+              false) nixosInput.config.home-manager.users);
         };
       };
       ssv = nixosInput: {
