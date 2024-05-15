@@ -66,7 +66,7 @@
         };
         config.services.udev.extraRules =
           lib.modules.mkIf config.nixplus.dnwu.enable ''
-            ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{power/wakeup}="enabled"
+            ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{power/wakeup}="disabled"
           '';
       };
       echm = { config, lib, ... }: {
