@@ -2,15 +2,47 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   outputs = { nixpkgs, ... }: {
     formatter = builtins.mapAttrs (_: pkgs: pkgs.nixfmt) nixpkgs.legacyPackages;
-    homeModules.myshell = { config, lib, ... }: {
-      options.nixplus.myshell =
-        lib.options.mkOption { type = lib.types.package; };
-      config.programs.bash = lib.modules.mkIf (config ? nixplus.myshell) {
-        enable = true;
-        initExtra = let
-          sh = "${config.nixplus.myshell}${config.nixplus.myshell.shellPath}";
-        in lib.modules.mkOrder 10200
-        "[ $MYSHELL_FORCE_BASH != 1 ] && SHELL=${sh} exec ${sh}";
+    homeModules = {
+      hyprland = { config, lib, pkgs, ... }: {
+        options.nixplus.hyprland = {
+          autoRun.enable = lib.options.mkOption {
+            default = false;
+            type = lib.types.bool;
+          };
+          portal.enable = lib.options.mkOption {
+            default = false;
+            type = lib.types.bool;
+          };
+        };
+        config = lib.modules.mkIf config.wayland.windowManager.hyprland.enable {
+          programs.bash =
+            lib.modules.mkIf config.nixplus.hyprland.autoRun.enable {
+              enable = true;
+              initExtra = lib.modules.mkOrder 10100
+                "[[ $(tty) = /dev/tty* ]] && exec ${config.wayland.windowManager.hyprland.finalPackage}/bin/${config.wayland.windowManager.hyprland.finalPackage.meta.mainProgram}";
+            };
+          xdg.portal = lib.modules.mkIf config.nixplus.hyprland.portal.enable {
+            configPackages =
+              [ config.wayland.windowManager.hyprland.finalPackage ];
+            enable = true;
+            extraPortals = [
+              (pkgs.xdg-desktop-portal-hyprland.override {
+                hyprland = config.wayland.windowManager.hyprland.finalPackage;
+              })
+            ];
+          };
+        };
+      };
+      myshell = { config, lib, ... }: {
+        options.nixplus.myshell =
+          lib.options.mkOption { type = lib.types.package; };
+        config.programs.bash = lib.modules.mkIf (config ? nixplus.myshell) {
+          enable = true;
+          initExtra = let
+            sh = "${config.nixplus.myshell}${config.nixplus.myshell.shellPath}";
+          in lib.modules.mkOrder 10200
+          "[ $MYSHELL_FORCE_BASH != 1 ] && SHELL=${sh} exec ${sh}";
+        };
       };
     };
     lib.homeConfiguration = { modules, }: { imports = modules; };
