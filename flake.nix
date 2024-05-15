@@ -61,6 +61,16 @@
               nixosInput.config.home-manager.users);
         };
       };
+      dnwu = { config, lib, ... }: {
+        options.nixplus.dnwu.enable = lib.options.mkOption {
+          default = false;
+          type = lib.types.bool;
+        };
+        config.services.udev.extraRules =
+          lib.modules.mkIf config.nixplus.dnwu.enable ''
+            ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{power/wakeup}="enabled"
+          '';
+      };
       echm = { config, lib, ... }: {
         options.nixplus.echm.enable = lib.options.mkOption {
           default = false;
