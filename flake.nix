@@ -52,8 +52,7 @@
           home-manager.sharedModules = [
             (homeManagerInput: {
               options.nixplus.cohm = homeManagerInput.lib.options.mkOption {
-                type = builtins.head
-                  nixosInput.options.users.users.type.getSubModules;
+                type = nixosInput.options.users.users.type.nestedTypes.elemType;
               };
             })
           ];
