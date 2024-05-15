@@ -61,6 +61,26 @@
               nixosInput.config.home-manager.users);
         };
       };
+      echm = { config, lib, ... }: {
+        options.nixplus.echm.enable = lib.options.mkOption {
+          default = false;
+          type = lib.types.bool;
+        };
+        config = lib.modules.mkIf config.nixplus.echm.enable
+          (lib.modules.mkMerge [
+            (lib.modules.mkIf (builtins.any (user: user.xdg.portal.enable)
+              (builtins.attrValues config.home-manager.users)) {
+                environment.pathToLink =
+                  [ "/share/applications" "/share/xdg-desktop-portal" ];
+              })
+            (lib.modules.mkIf
+              (builtins.any (user: user.wayland.windowManager.hyprland.enable)
+                (builtins.attrValues config.home-manager.users)) {
+                  hardware.opengl.enable = true;
+                  security.polkit.enable = true;
+                })
+          ]) { };
+      };
       nvidia = { config, lib, ... }: {
         options.nixplus.nvidia.enable = lib.options.mkOption {
           default = false;
