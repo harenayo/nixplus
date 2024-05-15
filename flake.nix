@@ -34,15 +34,19 @@
         };
       };
       myshell = { config, lib, ... }: {
-        options.nixplus.myshell =
-          lib.options.mkOption { type = lib.types.package; };
-        config.programs.bash = lib.modules.mkIf (config ? nixplus.myshell) {
-          enable = true;
-          initExtra = let
-            sh = "${config.nixplus.myshell}${config.nixplus.myshell.shellPath}";
-          in lib.modules.mkOrder 10200
-          "[ \${MYSHELL_FORCE_BASH:-0} != 1 ] && SHELL=${sh} exec ${sh}";
+        options.nixplus.myshell = lib.options.mkOption {
+          default = null;
+          type = lib.types.nullOr lib.types.package;
         };
+        config.programs.bash =
+          lib.modules.mkIf (config.nixplus.myshell != null) {
+            enable = true;
+            initExtra = let
+              sh =
+                "${config.nixplus.myshell}${config.nixplus.myshell.shellPath}";
+            in lib.modules.mkOrder 10200
+            "[ \${MYSHELL_FORCE_BASH:-0} != 1 ] && SHELL=${sh} exec ${sh}";
+          };
       };
     };
     lib.homeConfiguration = { modules, }: { imports = modules; };
@@ -51,11 +55,13 @@
         config = {
           home-manager.sharedModules = [
             (homeManagerInput: {
-              options.nixplus.cohm = homeManagerInput.lib.options.mkOption { };
+              options.nixplus.cohm =
+                homeManagerInput.lib.options.mkOption { default = null; };
             })
           ];
           users.users = builtins.mapAttrs (_: user: user.nixplus.cohm)
-            (nixosInput.lib.attrsets.filterAttrs (_: user: user ? nixplus.cohm)
+            (nixosInput.lib.attrsets.filterAttrs
+              (_: user: user.nixplus.cohm != null)
               nixosInput.config.home-manager.users);
         };
       };
