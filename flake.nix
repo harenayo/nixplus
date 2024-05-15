@@ -89,7 +89,7 @@
                   hardware.opengl.enable = true;
                   security.polkit.enable = true;
                 })
-          ]) { };
+          ]);
       };
       nvidia = { config, lib, ... }: {
         options.nixplus.nvidia.enable = lib.options.mkOption {
