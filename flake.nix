@@ -25,23 +25,14 @@
         config = {
           home-manager.sharedModules = [
             (homeManagerInput: {
-              options.nixplus.cohm = {
-                enable = homeManagerInput.lib.options.mkOption {
-                  default = false;
-                  type = homeManagerInput.lib.types.bool;
-                };
-                config = homeManagerInput.lib.options.mkOption {
-                  default = { };
-                  type =
-                    builtins.head nixosInput.options.user.user.getSubModules;
-                };
+              options.nixplus.cohm = homeManagerInput.lib.options.mkOption {
+                type = builtins.head nixosInput.options.user.user.getSubModules;
               };
             })
           ];
-          users.users = builtins.mapAttrs (_: user: user.nixplus.cohm.config)
-            (nixosInput.lib.attrsets.filterAttrs (_:
-              nixosInput.lib.attrsets.attrByPath [ "nixplus" "cohm" "enable" ]
-              false) nixosInput.config.home-manager.users);
+          users.users = builtins.mapAttrs (_: user: user.nixplus.cohm)
+            (nixosInput.lib.attrsets.filterAttrs (_: user: user ? nixplus.cohm)
+              nixosInput.config.home-manager.users);
         };
       };
       nvidia = { config, lib, ... }: {
