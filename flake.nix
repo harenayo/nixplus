@@ -80,7 +80,7 @@
           (lib.modules.mkMerge [
             (lib.modules.mkIf (builtins.any (user: user.xdg.portal.enable)
               (builtins.attrValues config.home-manager.users)) {
-                environment.pathToLink =
+                environment.pathsToLink =
                   [ "/share/applications" "/share/xdg-desktop-portal" ];
               })
             (lib.modules.mkIf
