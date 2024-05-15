@@ -44,6 +44,22 @@
               false) nixosInput.config.home-manager.users);
         };
       };
+      nvidia = { config, lib, ... }: {
+        options.nixplus.nvidia.enable = lib.options.mkOption {
+          default = false;
+          type = lib.types.bool;
+        };
+        config = {
+          environment.variables =
+            lib.modules.mkIf config.nixplus.nvidia.enable {
+              "NVD_BACKEND" = "direct";
+              "WLR_NO_HARDWARE_CURSORS" = "1";
+            };
+          services.xserver.videoDrivers =
+            lib.modules.mkIf config.nixplus.nvidia.enable
+            && !config.hardware.nvidia.datacenter.enable [ "nvidia" ];
+        };
+      };
       ssv = nixosInput: {
         config.home-manager.sharedModules = [
           (homeManagerInput: {
