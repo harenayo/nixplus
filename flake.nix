@@ -102,9 +102,9 @@
               "NVD_BACKEND" = "direct";
               "WLR_NO_HARDWARE_CURSORS" = "1";
             };
-          services.xserver.videoDrivers =
-            lib.modules.mkIf config.nixplus.nvidia.enable
-            && !config.hardware.nvidia.datacenter.enable [ "nvidia" ];
+          services.xserver.videoDrivers = lib.modules.mkIf
+            (config.nixplus.nvidia.enable
+              && !config.hardware.nvidia.datacenter.enable) [ "nvidia" ];
         };
       };
       ssv = nixosInput: {
