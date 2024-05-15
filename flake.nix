@@ -3,18 +3,12 @@
   outputs = { nixpkgs, ... }: {
     formatter = builtins.mapAttrs (_: pkgs: pkgs.nixfmt) nixpkgs.legacyPackages;
     homeModules.myshell = { config, lib, ... }: {
-      options.nixplus.myshell = {
-        enable = lib.options.mkOption {
-          default = false;
-          type = lib.types.bool;
-        };
-        package = lib.options.mkOption { type = lib.types.package; };
-      };
-      config.programs.bash = lib.modules.mkIf config.nixplus.myshell.enable {
+      options.nixplus.myshell =
+        lib.options.mkOption { type = lib.types.package; };
+      config.programs.bash = lib.modules.mkIf (config ? nixplus.myshell) {
         enable = true;
         initExtra = let
-          sh =
-            "${config.nixplus.myshell.package}${config.nixplus.myshell.package.shellPath}";
+          sh = "${config.nixplus.myshell}${config.nixplus.myshell.shellPath}";
         in lib.modules.mkOrder 10200
         "[ $MYSHELL_FORCE_BASH != 1 ] && SHELL=${sh} exec ${sh}";
       };
