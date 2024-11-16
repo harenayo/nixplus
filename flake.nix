@@ -83,7 +83,7 @@
                 };
                 ssv.enable = home-manager.lib.options.mkOption {
                   default = false;
-                  type = home-manager.types.bool;
+                  type = home-manager.lib.types.bool;
                 };
               };
               config = {
