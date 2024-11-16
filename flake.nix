@@ -1,7 +1,7 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   outputs =
-    { ... }:
+    { nixpkgs, ... }:
     {
       nixosModules.nixplus = nixos: {
         options.nixplus = {
@@ -60,9 +60,16 @@
                     default = false;
                     type = home-manager.lib.types.bool;
                   };
-                  portal.enable = home-manager.lib.options.mkOption {
-                    default = false;
-                    type = home-manager.lib.types.bool;
+                  portal = {
+                    enable = home-manager.lib.options.mkOption {
+                      default = false;
+                      type = home-manager.lib.types.bool;
+                    };
+                    package = home-manager.lib.options.mkOption {
+                      default =
+                        nixpkgs.legacyPacakges.${home-manager.config.nixplus.metadata.system}.xdg-desktop-portal-hyprland;
+                      type = home-manager.lib.types.package;
+                    };
                   };
                 };
                 myshell = home-manager.lib.options.mkOption {
@@ -109,7 +116,7 @@
                       configPackages = [ home-manager.config.wayland.windowManager.hyprland.finalPackage ];
                       enable = true;
                       extraPortals = [
-                        (home-manager.pkgs.xdg-desktop-portal-hyprland.override {
+                        (home-manager.config.nixplus.hyprland.portal.package.override {
                           hyprland = home-manager.config.wayland.windowManager.hyprland.finalPackage;
                         })
                       ];
