@@ -1,9 +1,8 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   outputs =
-    { nixpkgs, ... }:
+    { ... }:
     {
-      formatter = builtins.mapAttrs (_: pkgs: pkgs.nixfmt-rfc-style) nixpkgs.legacyPackages;
       homeModules = {
         hyprland =
           {
