@@ -45,7 +45,7 @@
             (home-manager: {
               options.nixplus = {
                 cohm = home-manager.lib.options.mkOption { default = null; };
-                flags.wsl = home-manager.lib.options.mkOption {
+                metadata.wsl = home-manager.lib.options.mkOption {
                   default = nixos.config.wsl.enable or false;
                 };
                 hyprland = {
