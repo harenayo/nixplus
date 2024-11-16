@@ -45,8 +45,15 @@
             (home-manager: {
               options.nixplus = {
                 cohm = home-manager.lib.options.mkOption { default = null; };
-                metadata.wsl = home-manager.lib.options.mkOption {
-                  default = nixos.config.wsl.enable or false;
+                metadata = {
+                  system = home-manager.lib.options.mkOption {
+                    default = nixos.config.nixpkgs.system;
+                    type = home-manager.lib.types.str;
+                  };
+                  wsl = home-manager.lib.options.mkOption {
+                    default = nixos.config.wsl.enable or false;
+                    type = home-manager.lib.types.bool;
+                  };
                 };
                 hyprland = {
                   autoRun.enable = home-manager.lib.options.mkOption {
