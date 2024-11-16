@@ -130,8 +130,8 @@
               builtins.attrValues nixos.config.home-manager.users
             )
           ) true;
-          services.udev = {
-            extraRules = nixos.lib.modules.mkIf nixos.config.nixplus.dnwu.enable ''
+          services = {
+            udev.extraRules = nixos.lib.modules.mkIf nixos.config.nixplus.dnwu.enable ''
               ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{power/wakeup}="disabled"
             '';
             xserver.videoDrivers = nixos.lib.modules.mkIf (
