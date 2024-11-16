@@ -3,6 +3,11 @@
   outputs =
     { nixpkgs, ... }:
     {
+      lib.homeConfiguration =
+        { modules }:
+        {
+          imports = modules;
+        };
       nixosModules.nixplus = nixos: {
         options.nixplus = {
           dnwu.enable = nixos.lib.options.mkOption {
