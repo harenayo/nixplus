@@ -119,6 +119,15 @@
               ]
             );
           };
+        flags = nixosInput: {
+          config.home-manager.sharedModules = [
+            (homeManagerInput: {
+              options.nixplus.flags.wsl = homeManagerInput.lib.options.mkOption {
+                default = nixosInput.config.wsl or false;
+              };
+            })
+          ];
+        };
         nvidia =
           { config, lib, ... }:
           {
