@@ -81,7 +81,7 @@
                   default = null;
                   type = home-manager.lib.types.nullOr home-manager.lib.types.package;
                 };
-                ssv.enable = home-manager.options.mkOption {
+                ssv.enable = home-manager.lib.options.mkOption {
                   default = false;
                   type = home-manager.types.bool;
                 };
