@@ -87,7 +87,7 @@
                 };
               };
               config = {
-                home.stateVersion = home-manager.lib.modules.mkIf home-manager.nixplus.ssv.enable nixos.config.system.stateVersion;
+                home.stateVersion = home-manager.lib.modules.mkIf home-manager.config.nixplus.ssv.enable nixos.config.system.stateVersion;
                 programs.bash = home-manager.lib.modules.mkMerge [
                   (home-manager.lib.modules.mkIf
                     (
