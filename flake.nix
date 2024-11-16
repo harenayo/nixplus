@@ -3,158 +3,125 @@
   outputs =
     { ... }:
     {
-      homeModules = {
-        hyprland =
-          {
-            config,
-            lib,
-            pkgs,
-            ...
-          }:
-          {
-            options.nixplus.hyprland = {
-              autoRun.enable = lib.options.mkOption {
-                default = false;
-                type = lib.types.bool;
-              };
-              portal.enable = lib.options.mkOption {
-                default = false;
-                type = lib.types.bool;
-              };
-            };
-            config = lib.modules.mkIf config.wayland.windowManager.hyprland.enable {
-              programs.bash = lib.modules.mkIf config.nixplus.hyprland.autoRun.enable {
-                enable = true;
-                initExtra =
-                  lib.modules.mkOrder 10100
-                    "[[ $(tty) = /dev/tty* ]] && exec ${config.wayland.windowManager.hyprland.finalPackage}/bin/${config.wayland.windowManager.hyprland.finalPackage.meta.mainProgram}";
-              };
-              xdg.portal = lib.modules.mkIf config.nixplus.hyprland.portal.enable {
-                configPackages = [ config.wayland.windowManager.hyprland.finalPackage ];
-                enable = true;
-                extraPortals = [
-                  (pkgs.xdg-desktop-portal-hyprland.override {
-                    hyprland = config.wayland.windowManager.hyprland.finalPackage;
-                  })
-                ];
-              };
-            };
+      nixosModules.nixplus = nixos: {
+        options.nixplus = {
+          dnwu.enable = nixos.lib.options.mkOption {
+            default = false;
+            type = nixos.lib.types.bool;
           };
-        myshell =
-          { config, lib, ... }:
-          {
-            options.nixplus.myshell = lib.options.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.package;
-            };
-            config.programs.bash = lib.modules.mkIf (config.nixplus.myshell != null) {
-              enable = true;
-              initExtra =
-                let
-                  sh = "${config.nixplus.myshell}${config.nixplus.myshell.shellPath}";
-                in
-                lib.modules.mkOrder 10200 "[ \${MYSHELL_FORCE_BASH:-0} != 1 ] && SHELL=${sh} exec ${sh}";
-            };
+          echm.enable = nixos.lib.options.mkOption {
+            default = false;
+            type = nixos.lib.types.bool;
           };
-      };
-      lib.homeConfiguration =
-        { modules }:
-        {
-          imports = modules;
+          nvidia.enable = nixos.lib.options.mkOption {
+            default = false;
+            type = nixos.lib.types.bool;
+          };
         };
-      nixosModules = {
-        cohm = nixosInput: {
-          config = {
+        config = nixos.lib.modules.mkMerge [
+          {
+            environment.variables = nixos.lib.modules.mkIf nixos.config.nixplus.nvidia.enable {
+              "NVD_BACKEND" = "direct";
+              "WLR_NO_HARDWARE_CURSORS" = "1";
+            };
             home-manager.sharedModules = [
-              (homeManagerInput: {
-                options.nixplus.cohm = homeManagerInput.lib.options.mkOption { default = null; };
+              (home-manager: {
+                options.nixplus = {
+                  cohm = home-manager.lib.options.mkOption { default = null; };
+                  flags.wsl = home-manager.lib.options.mkOption {
+                    default = nixos.config.wsl.enable or false;
+                  };
+                  hyprland = {
+                    autoRun.enable = home-manager.lib.options.mkOption {
+                      default = false;
+                      type = home-manager.lib.types.bool;
+                    };
+                    portal.enable = home-manager.lib.options.mkOption {
+                      default = false;
+                      type = home-manager.lib.types.bool;
+                    };
+                  };
+                  myshell = home-manager.lib.options.mkOption {
+                    default = null;
+                    type = home-manager.lib.types.nullOr home-manager.lib.types.package;
+                  };
+                  ssv.enable = home-manager.options.mkOption {
+                    default = false;
+                    type = home-manager.types.bool;
+                  };
+                };
+                config = home-manager.lib.modules.mkMerge [
+                  {
+                    home.stateVersion = home-manager.modules.mkIf home-manager.nixplus.ssv.enable nixos.config.system.stateVersion;
+                  }
+                  home-manager.lib.modules.mkIf
+                  home-manager.config.wayland.windowManager.hyprland.enable
+                  {
+                    programs.bash = home-manager.lib.modules.mkMerge [
+                      (home-manager.lib.modules.mkIf home-manager.config.nixplus.hyprland.autoRun.enable {
+                        enable = true;
+                        initExtra =
+                          home-manager.lib.modules.mkOrder 10100
+                            "[[ $(tty) = /dev/tty* ]] && exec ${home-manager.config.wayland.windowManager.hyprland.finalPackage}/bin/${home-manager.config.wayland.windowManager.hyprland.finalPackage.meta.mainProgram}";
+                      })
+                      (home-manager.lib.modules.mkIf (home-manager.config.nixplus.myshell != null) {
+                        enable = true;
+                        initExtra =
+                          let
+                            sh = "${home-manager.config.nixplus.myshell}${home-manager.config.nixplus.myshell.shellPath}";
+                          in
+                          home-manager.lib.modules.mkOrder 10200
+                            "[ \${MYSHELL_FORCE_BASH:-0} != 1 ] && SHELL=${sh} exec ${sh}";
+                      })
+                    ];
+                    xdg.portal = home-manager.lib.modules.mkIf home-manager.config.nixplus.hyprland.portal.enable {
+                      configPackages = [ home-manager.config.wayland.windowManager.hyprland.finalPackage ];
+                      enable = true;
+                      extraPortals = [
+                        (home-manager.pkgs.xdg-desktop-portal-hyprland.override {
+                          hyprland = home-manager.config.wayland.windowManager.hyprland.finalPackage;
+                        })
+                      ];
+                    };
+                  }
+                ];
               })
             ];
-            users.users = builtins.mapAttrs (_: user: user.nixplus.cohm) (
-              nixosInput.lib.attrsets.filterAttrs (
-                _: user: user.nixplus.cohm != null
-              ) nixosInput.config.home-manager.users
-            );
-          };
-        };
-        dnwu =
-          { config, lib, ... }:
-          {
-            options.nixplus.dnwu.enable = lib.options.mkOption {
-              default = false;
-              type = lib.types.bool;
-            };
-            config.services.udev.extraRules = lib.modules.mkIf config.nixplus.dnwu.enable ''
-              ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{power/wakeup}="disabled"
-            '';
-          };
-        echm =
-          { config, lib, ... }:
-          {
-            options.nixplus.echm.enable = lib.options.mkOption {
-              default = false;
-              type = lib.types.bool;
-            };
-            config = lib.modules.mkIf config.nixplus.echm.enable (
-              lib.modules.mkMerge [
-                (lib.modules.mkIf
-                  (builtins.any (user: user.xdg.portal.enable) (builtins.attrValues config.home-manager.users))
-                  {
-                    environment.pathsToLink = [
-                      "/share/applications"
-                      "/share/xdg-desktop-portal"
-                    ];
-                  }
-                )
-                (lib.modules.mkIf
-                  (builtins.any (user: user.wayland.windowManager.hyprland.enable) (
-                    builtins.attrValues config.home-manager.users
-                  ))
-                  {
-                    hardware.opengl.enable = true;
-                    security.polkit.enable = true;
-                  }
-                )
-              ]
-            );
-          };
-        flags = nixosInput: {
-          config.home-manager.sharedModules = [
-            (homeManagerInput: {
-              options.nixplus.flags.wsl = homeManagerInput.lib.options.mkOption {
-                default = nixosInput.config.wsl.enable or false;
-              };
-            })
-          ];
-        };
-        nvidia =
-          { config, lib, ... }:
-          {
-            options.nixplus.nvidia.enable = lib.options.mkOption {
-              default = false;
-              type = lib.types.bool;
-            };
-            config = {
-              environment.variables = lib.modules.mkIf config.nixplus.nvidia.enable {
-                "NVD_BACKEND" = "direct";
-                "WLR_NO_HARDWARE_CURSORS" = "1";
-              };
-              services.xserver.videoDrivers = lib.modules.mkIf (
-                config.nixplus.nvidia.enable && !config.hardware.nvidia.datacenter.enable
+            services.udev = {
+              extraRules = nixos.lib.modules.mkIf nixos.config.nixplus.dnwu.enable ''
+                ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{power/wakeup}="disabled"
+              '';
+              xserver.videoDrivers = nixos.lib.modules.mkIf (
+                nixos.config.nixplus.nvidia.enable && !nixos.config.hardware.nvidia.datacenter.enable
               ) [ "nvidia" ];
             };
-          };
-        ssv = nixosInput: {
-          config.home-manager.sharedModules = [
-            (homeManagerInput: {
-              options.nixplus.ssv.enable = homeManagerInput.lib.options.mkOption {
-                default = false;
-                type = homeManagerInput.lib.types.bool;
-              };
-              config.home.stateVersion = homeManagerInput.lib.modules.mkIf homeManagerInput.config.nixplus.ssv.enable nixosInput.config.system.stateVersion;
-            })
-          ];
-        };
+            users.users = builtins.mapAttrs (_: user: user.nixplus.cohm) (
+              nixos.lib.attrsets.filterAttrs (_: user: user.nixplus.cohm != null) nixos.config.home-manager.users
+            );
+          }
+          (nixos.lib.modules.mkIf nixos.config.nixplus.echm.enable (
+            nixos.lib.modules.mkMerge [
+              (nixos.lib.modules.mkIf
+                (builtins.any (user: user.xdg.portal.enable) (builtins.attrValues nixos.config.home-manager.users))
+                {
+                  environment.pathsToLink = [
+                    "/share/applications"
+                    "/share/xdg-desktop-portal"
+                  ];
+                }
+              )
+              (nixos.lib.modules.mkIf
+                (builtins.any (user: user.wayland.windowManager.hyprland.enable) (
+                  builtins.attrValues nixos.config.home-manager.users
+                ))
+                {
+                  hardware.opengl.enable = true;
+                  security.polkit.enable = true;
+                }
+              )
+            ]
+          ))
+        ];
       };
     };
 }
