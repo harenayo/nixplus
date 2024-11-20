@@ -88,6 +88,15 @@
                   default = null;
                   type = home-manager.lib.types.nullOr home-manager.lib.types.package;
                 };
+                rustfmt = {
+                  enable = home-manager.lib.options.mkOption {
+                    default = false;
+                    type = home-manager.lib.types.bool;
+                  };
+                  config = home-manager.lib.options.mkOption {
+                    default = { };
+                  };
+                };
                 ssv.enable = home-manager.lib.options.mkOption {
                   default = false;
                   type = home-manager.lib.types.bool;
@@ -121,21 +130,31 @@
                         "[ \${MYSHELL_FORCE_BASH:-0} != 1 ] && SHELL=${sh} exec ${sh}";
                   })
                 ];
-                xdg.portal =
-                  home-manager.lib.modules.mkIf
-                    (
-                      home-manager.config.wayland.windowManager.hyprland.enable
-                      && home-manager.config.nixplus.hyprland.portal.enable
-                    )
-                    {
-                      configPackages = [ home-manager.config.wayland.windowManager.hyprland.finalPackage ];
-                      enable = true;
-                      extraPortals = [
-                        (home-manager.config.nixplus.hyprland.portal.package.override {
-                          hyprland = home-manager.config.wayland.windowManager.hyprland.finalPackage;
-                        })
-                      ];
-                    };
+                xdg = {
+                  configFile."rustfmt/rustfmt.toml" =
+                    home-manager.lib.modules.mkIf home-manager.config.nixplus.rustfmt.enable
+                      {
+                        enable = true;
+                        source =
+                          (home-manager.pkgs.formats.toml { }).generate "rustfmt.toml"
+                            home-manager.config.nixplus.rustfmt.config;
+                      };
+                  portal =
+                    home-manager.lib.modules.mkIf
+                      (
+                        home-manager.config.wayland.windowManager.hyprland.enable
+                        && home-manager.config.nixplus.hyprland.portal.enable
+                      )
+                      {
+                        configPackages = [ home-manager.config.wayland.windowManager.hyprland.finalPackage ];
+                        enable = true;
+                        extraPortals = [
+                          (home-manager.config.nixplus.hyprland.portal.package.override {
+                            hyprland = home-manager.config.wayland.windowManager.hyprland.finalPackage;
+                          })
+                        ];
+                      };
+                };
               };
             })
           ];
