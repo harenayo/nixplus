@@ -104,8 +104,11 @@
                     {
                       enable = true;
                       initExtra =
+                        let
+                          drv = home-manager.config.wayland.windowManager.hyprland.finalPackage;
+                        in
                         home-manager.lib.modules.mkOrder 10100
-                          "[[ $(tty) = /dev/tty* ]] && exec ${home-manager.config.wayland.windowManager.hyprland.finalPackage}/bin/${home-manager.config.wayland.windowManager.hyprland.finalPackage.meta.mainProgram}";
+                          "[[ $(tty) = /dev/tty* ]] && exec ${drv}/bin/${drv.meta.mainProgram}";
                     }
                   )
                   (home-manager.lib.modules.mkIf (home-manager.config.nixplus.myshell != null) {
