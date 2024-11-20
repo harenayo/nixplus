@@ -51,8 +51,15 @@
               options.nixplus = {
                 cohm = home-manager.lib.options.mkOption { default = null; };
                 metadata = {
+                  hostPlatform = home-manager.lib.options.mkOption {
+                    # https://github.com/NixOS/nixpkgs/blob/9cd675e112c8e8c38665be029740762e3009b51e/nixos/modules/misc/nixpkgs.nix#L184-L199
+                    default = nixos.config.nixpkgs.hostPlatform;
+                    type = home-manager.lib.types.either home-manager.lib.types.str home-manager.lib.types.attrs;
+                  };
                   system = home-manager.lib.options.mkOption {
-                    default = nixos.config.nixpkgs.system;
+                    # https://github.com/NixOS/nixpkgs/blob/9cd675e112c8e8c38665be029740762e3009b51e/nixos/modules/misc/nixpkgs.nix#L283-L327
+                    default =
+                      if nixos.options.nixpkgs.hostPlatform.isDefined then null else nixos.config.nixpkgs.system;
                     type = home-manager.lib.types.str;
                   };
                   wsl = home-manager.lib.options.mkOption {
@@ -72,7 +79,7 @@
                     };
                     package = home-manager.lib.options.mkOption {
                       default =
-                        nixpkgs.legacyPacakges.${home-manager.config.nixplus.metadata.system}.xdg-desktop-portal-hyprland;
+                        nixpkgs.legacyPacakges.${home-manager.config.nixplus.metadata.hostPlatform}.xdg-desktop-portal-hyprland;
                       type = home-manager.lib.types.package;
                     };
                   };
