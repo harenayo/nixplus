@@ -136,7 +136,10 @@
                       {
                         enable = true;
                         source =
-                          (home-manager.pkgs.formats.toml { }).generate "rustfmt.toml"
+                          (nixpkgs.legacyPackages.${home-manager.config.nixplus.metadata.hostPlatform.system}.formats.toml
+                            { }
+                          ).generate
+                            "rustfmt.toml"
                             home-manager.config.nixplus.rustfmt.config;
                       };
                   portal =
