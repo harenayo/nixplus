@@ -49,6 +49,15 @@
           home-manager.sharedModules = [
             (home-manager: {
               options.nixplus = {
+                clangd = {
+                  config = home-manager.lib.options.mkOption {
+                    default = { };
+                  };
+                  enable = home-manager.lib.options.mkOption {
+                    default = false;
+                    type = home-manager.lib.types.bool;
+                  };
+                };
                 cohm = home-manager.lib.options.mkOption { default = null; };
                 metadata = {
                   hostPlatform = home-manager.lib.options.mkOption {
@@ -89,12 +98,12 @@
                   type = home-manager.lib.types.nullOr home-manager.lib.types.package;
                 };
                 rustfmt = {
+                  config = home-manager.lib.options.mkOption {
+                    default = { };
+                  };
                   enable = home-manager.lib.options.mkOption {
                     default = false;
                     type = home-manager.lib.types.bool;
-                  };
-                  config = home-manager.lib.options.mkOption {
-                    default = { };
                   };
                 };
                 ssv.enable = home-manager.lib.options.mkOption {
@@ -131,17 +140,26 @@
                   })
                 ];
                 xdg = {
-                  configFile."rustfmt/rustfmt.toml" =
-                    home-manager.lib.modules.mkIf home-manager.config.nixplus.rustfmt.enable
-                      {
-                        enable = true;
-                        source =
-                          (nixpkgs.legacyPackages.${home-manager.config.nixplus.metadata.hostPlatform.system}.formats.toml
-                            { }
-                          ).generate
-                            "rustfmt.toml"
-                            home-manager.config.nixplus.rustfmt.config;
-                      };
+                  configFile = {
+                    "clangd/config.yaml" = home-manager.lib.modules.mkIf home-manager.config.nixplus.clangd.enable {
+                      enable = true;
+                      source =
+                        (nixpkgs.legacyPackages.${home-manager.config.nixplus.metadata.hostPlatform.system}.formats.yaml
+                          { }
+                        ).generate
+                          "Clangd Config File"
+                          home-manager.config.nixplus.clangd.config;
+                    };
+                    "rustfmt/rustfmt.toml" = home-manager.lib.modules.mkIf home-manager.config.nixplus.rustfmt.enable {
+                      enable = true;
+                      source =
+                        (nixpkgs.legacyPackages.${home-manager.config.nixplus.metadata.hostPlatform.system}.formats.toml
+                          { }
+                        ).generate
+                          "Rustfmt Config File"
+                          home-manager.config.nixplus.rustfmt.config;
+                    };
+                  };
                   portal =
                     home-manager.lib.modules.mkIf
                       (
