@@ -153,7 +153,7 @@
                           yaml = (pkgs.formats.yaml { }).generate;
                         in
                         pkgs.concatText name (
-                          builtins.flatten (
+                          home-manager.lib.lists.flatten (
                             builtins.imap0 (index: config: [
                               (yaml "${name} (Fragment ${index})" config)
                               sep
