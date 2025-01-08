@@ -155,7 +155,7 @@
                         pkgs.concatText name (
                           home-manager.lib.lists.flatten (
                             home-manager.lib.lists.imap0 (index: config: [
-                              (yaml "${name} (Fragment ${index})" config)
+                              (yaml "${name} (Fragment ${builtins.toString index})" config)
                               sep
                             ]) home-manager.config.nixplus.clangd.config
                           )
