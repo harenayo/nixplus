@@ -125,8 +125,7 @@
                         let
                           drv = home-manager.config.wayland.windowManager.hyprland.finalPackage;
                         in
-                        home-manager.lib.modules.mkOrder 10100
-                          "[[ $(tty) = /dev/tty* ]] && exec ${drv}/bin/${drv.meta.mainProgram}";
+                        home-manager.lib.modules.mkOrder 10100 "[[ $(tty) = /dev/tty* ]] && exec ${drv}/bin/${drv.meta.mainProgram}";
                     }
                   )
                   (home-manager.lib.modules.mkIf (home-manager.config.nixplus.myshell != null) {
@@ -135,8 +134,7 @@
                       let
                         sh = "${home-manager.config.nixplus.myshell}${home-manager.config.nixplus.myshell.shellPath}";
                       in
-                      home-manager.lib.modules.mkOrder 10200
-                        "[ \${MYSHELL_FORCE_BASH:-0} != 1 ] && SHELL=${sh} exec ${sh}";
+                      home-manager.lib.modules.mkOrder 10200 "[ \${MYSHELL_FORCE_BASH:-0} != 1 ] && SHELL=${sh} exec ${sh}";
                   })
                 ];
                 xdg = {
@@ -144,11 +142,24 @@
                     "clangd/config.yaml" = home-manager.lib.modules.mkIf home-manager.config.nixplus.clangd.enable {
                       enable = true;
                       source =
-                        (nixpkgs.legacyPackages.${home-manager.config.nixplus.metadata.hostPlatform.system}.formats.yaml
-                          { }
-                        ).generate
-                          "Clangd Config File"
-                          home-manager.config.nixplus.clangd.config;
+                        let
+                          pkgs = nixpkgs.legacyPackages.${home-manager.config.nixplus.metadata.hostPlatform.system};
+                          name = "Clangd Config File";
+                          sep = pkgs.writeText "${name} (Separator)" ''
+
+                            ---
+
+                          '';
+                          yaml = (pkgs.formats.yaml { }).generate;
+                        in
+                        pkgs.concatText name (
+                          builtins.flatten (
+                            builtins.imap0 (index: config: [
+                              (yaml "${name} (Fragment ${index})" config)
+                              sep
+                            ]) home-manager.config.nixplus.clangd.config
+                          )
+                        );
                     };
                     "rustfmt/rustfmt.toml" = home-manager.lib.modules.mkIf home-manager.config.nixplus.rustfmt.enable {
                       enable = true;
