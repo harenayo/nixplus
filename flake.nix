@@ -145,20 +145,20 @@
                         let
                           pkgs = nixpkgs.legacyPackages.${home-manager.config.nixplus.metadata.hostPlatform.system};
                           name = "Clangd Config File";
-                          sep = pkgs.writeText "${name} (Separator)" ''
-
-                            ---
-
-                          '';
-                          yaml = (pkgs.formats.yaml { }).generate;
                         in
                         pkgs.concatText name (
-                          home-manager.lib.lists.flatten (
-                            home-manager.lib.lists.imap0 (index: config: [
-                              (yaml "${name} (Fragment ${builtins.toString index})" config)
-                              sep
-                            ]) home-manager.config.nixplus.clangd.config
-                          )
+                          home-manager.lib.strings.intersperse
+                            (pkgs.writeText "${name} (Separator)" ''
+
+                              ---
+
+                            '')
+                            (
+                              home-manager.lib.lists.imap0 (
+                                index: config:
+                                ((pkgs.formats.yaml { }).generate "${name} (Fragment ${builtins.toString index})" config)
+                              ) home-manager.config.nixplus.clangd.config
+                            )
                         );
                     };
                     "rustfmt/rustfmt.toml" = home-manager.lib.modules.mkIf home-manager.config.nixplus.rustfmt.enable {
