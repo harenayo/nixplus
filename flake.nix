@@ -88,7 +88,7 @@
                     };
                     package = home-manager.lib.options.mkOption {
                       default =
-                        nixpkgs.legacyPacakges.${home-manager.config.nixplus.metadata.hostPlatform.system}.xdg-desktop-portal-hyprland;
+                        nixpkgs.legacyPackages.${home-manager.config.nixplus.metadata.hostPlatform.system}.xdg-desktop-portal-hyprland;
                       type = home-manager.lib.types.package;
                     };
                   };
